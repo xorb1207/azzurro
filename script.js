@@ -125,3 +125,40 @@ function showToast(message, type = 'success') {
     toast.classList.remove('show');
   }, 2500); // 2.5초 후에 사라짐
 }
+
+// 백엔드 - 기록저장 fuctions
+function saveCalculation(formula, result) {
+  fetch('/.netlify/functions/saveCalculation', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ formula, result }),
+  }).then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        loadCalculationHistory(); // 저장 후 다시 불러오기
+      }
+    });
+}
+
+function loadCalculationHistory() {
+  fetch('/.netlify/functions/getCalculations')
+    .then((res) => res.json())
+    .then((history) => {
+      const container = document.getElementById('history');
+      container.innerHTML = '';
+      history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerText = `${item.formula} = ${item.result}`;
+        div.onclick = () => fillBackToCalculator(item);
+        container.appendChild(div);
+      });
+    });
+}
+
+function fillBackToCalculator(item) {
+  // 계산기에 다시 입력하는 로직 (수정 가능)
+  document.getElementById('formulaInput').value = item.formula;
+}
